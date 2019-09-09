@@ -126,12 +126,11 @@ function deleteTextNodes(where) {
  */
 function deleteTextNodesRecursive(where) {
 
-   // let arr = Array.from();
+    let arr = Array.from(where.childNodes);
 
-    for (let item of where.childNodes) {
+    for (let item of arr) {
         if (item.nodeType === 3) {
             item.remove();
-
         } else {
             deleteTextNodesRecursive(item);
         }
@@ -239,8 +238,33 @@ function collectDOMStat(root) {
    }
  */
  
-function observeChildNodes(where, fn) {
+function observeChildNodes( where, fn ) {
 
+    var observer = new MutationObserver( function ( mutations ) {
+        mutations.forEach( function ( mutation ) {
+            if ( mutation.type == 'childList' ) {
+                if ( mutation.addedNodes.length ) {
+
+                    fn(
+                        {
+                            type: 'insert',
+                            nodes: [...mutation.addedNodes]
+                        }
+                    );
+                }
+                if ( mutation.removedNodes.length ) {
+                    fn(
+                        {
+                            type: 'remove',
+                            nodes: [...mutation.removedNodes]
+                        }
+                    );
+                }
+            }
+        } );
+    } );
+
+    observer.observe( where, { childList: true, subtree: true } );
 }
 
 export {
