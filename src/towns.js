@@ -1,3 +1,5 @@
+import { rejects } from 'assert';
+
 /*
  Страница должна предварительно загрузить список городов из
  https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
@@ -37,6 +39,28 @@ const homeworkContainer = document.querySelector('#homework-container');
  https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
  */
 function loadTowns() {
+    return new Promise((resolve, reject) => {
+        fetch('https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json').then(response => {
+            if (response.status === 200) {
+                return response.json();
+            }
+        }).then(array => {
+            let cities = array.sort((a, b) => {
+
+                if (a.name < b.name) {
+                    return -1;
+                } else if (a.name > b.name) {
+                    return 1;
+                } 
+
+                return 0;
+            });
+
+            resolve(cities);
+        }).catch(() => {
+            reject('Не удалось загрузить города');
+        })
+    });
 }
 
 /*
@@ -51,6 +75,15 @@ function loadTowns() {
    isMatching('Moscow', 'Moscov') // false
  */
 function isMatching(full, chunk) {
+
+    let fullValue = full.toLowerCase();
+    let chunkValue = chunk.toLowerCase();
+
+    if (fullValue.includes(chunkValue)) {
+        return true;
+    } 
+    
+    return false;
 }
 
 /* Блок с надписью "Загрузка" */
@@ -62,8 +95,53 @@ const filterInput = homeworkContainer.querySelector('#filter-input');
 /* Блок с результатами поиска */
 const filterResult = homeworkContainer.querySelector('#filter-result');
 
-filterInput.addEventListener('keyup', function() {
+const replayButton = document.createElement('button');
+
+replayButton.textContent = 'Повторить';
+homeworkContainer.appendChild(replayButton);
+
+let towns;
+
+function getTowns() {
+    loadTowns().then(result => {
+        filterBlock.style.display = 'block';
+        loadingBlock.style.display = 'none';
+
+        towns = result;
+    }).catch(error => {
+        loadingBlock.innerHTML = `${error}`;
+        replayButton.style.display = 'block';
+    }); 
+}
+
+getTowns();
+
+replayButton.addEventListener('click', () => {
+    filterBlock.style.display = 'none';
+    loadingBlock.style.display = 'block';
+    loadingBlock.innerHTML = 'Загрузка...';
+    replayButton.style.display = 'none';
+
+    getTowns();
+});
+
+filterInput.addEventListener('keyup', () => {
     // это обработчик нажатия кливиш в текстовом поле
+    const value = filterInput.value;
+
+    filterResult.innerHTML = '';
+
+    if (value !== '') {
+        towns.forEach(town => {
+            if (isMatching(town.name, value)) {
+                const li = document.createElement('li');
+
+                li.textContent = town.name;
+                filterResult.appendChild(li);
+            }
+        });
+    }
+
 });
 
 export {
