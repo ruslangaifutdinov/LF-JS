@@ -58,7 +58,7 @@ function getCookies() {
         document.cookie.split(';').forEach(function(cookiesParts) {
             let [name, value] = cookiesParts.split('=');
 
-            cookies[name.trim()] = value;
+            cookies[name.trim()] = value; 
         });
 
         return cookies;
@@ -75,9 +75,9 @@ function updateTable() {
         if (!filterNameInput.value || cookie.includes(filterNameInput.value) 
         || cookies[cookie].includes(filterNameInput.value)) {
 
-            let row = listTable.insertRow(-1);
             let deleteButton = document.createElement('button');
-
+            let row = listTable.insertRow(-1);
+            
             deleteButton.textContent = 'удалить';
 
             deleteButton.addEventListener('click', function() {
